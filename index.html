@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Life Hub - Personal Planner</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: 나눔고딕 (Nanum Gothic) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Nanum Gothic"', 'sans-serif'],
+          },
+          colors: {
+            deskBg: '#EAE6DF',
+            coverDark: '#2C3338',
+            paperBg: '#FCFBF7',
+            paperLine: '#EAE6DD',
+            inkText: '#1E232A',
+            inkSub: '#5E6573',
+            work: { bg: '#EBF2FA', text: '#1E3A8A', border: '#B9D5F3' },
+            study: { bg: '#EBF7F0', text: '#0F5132', border: '#A3E0BC' },
+            personal: { bg: '#FFF5EB', text: '#8A4110', border: '#FCD3AC' },
+            diary: { bg: '#F2EDFA', text: '#3E2468', border: '#D3C2F0' },
+            imp: { bg: '#FDF0F0', text: '#9B1C1C', border: '#F8B4B4' }
+          },
+          boxShadow: {
+            'book': '0 25px 50px -12px rgba(44, 51, 56, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05)',
+            'polaroid': '0 4px 10px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.06)'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Nanum Gothic', sans-serif;
+    }
+    .lined-paper {
+      background-image: repeating-linear-gradient(transparent, transparent 27px, #EAE6DD 28px);
+      line-height: 28px;
+    }
+    .washi-tape {
+      background: rgba(220, 215, 201, 0.65);
+      backdrop-filter: blur(2px);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      position: relative;
+    }
+    .washi-tape::before, .washi-tape::after {
+      content: '';
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 4px;
+      background: repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(0,0,0,0.05) 2px, rgba(0,0,0,0.05) 4px);
+    }
+    .washi-tape::before { left: 0; }
+    .washi-tape::after { right: 0; }
+    
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-thumb { background: #D5CFBF; border-radius: 9999px; }
+  </style>
+</head>
+<body class="bg-deskBg text-inkText min-h-screen py-4 sm:py-8 px-2 sm:px-4 flex flex-col items-center">
+
+  <!-- 다이어리 전체 북 바인더 래퍼 -->
+  <div class="w-full max-w-7xl bg-coverDark p-2.5 sm:p-4 rounded-[28px] shadow-book flex flex-col min-h-[880px]">
+    
+    <!-- 북 인덱스 탭 -->
+    <header class="flex items-center justify-between px-2 sm:px-4 pb-2 text-xs font-bold">
+      <div class="flex items-center gap-2">
+        <span class="w-2.5 h-2.5 rounded-full bg-amber-500/80 inline-block"></span>
+        <h1 class="text-white tracking-wider text-sm sm:text-base font-extrabold">2026 Monthly & Diary Planner</h1>
+      </div>
+      
+      <!-- 상단 탭 네비게이션 -->
+      <nav class="flex items-center gap-1.5 sm:gap-2">
+        <button onclick="switchTab('dashboard')" id="tabBtn-dashboard" class="tab-btn px-3 sm:px-4 py-1.5 rounded-t-lg transition bg-paperBg text-inkText shadow font-bold text-xs flex items-center gap-1.5 border-t border-x border-paperLine">
+          <i class="fa-solid fa-calendar-days text-slate-700"></i><span>통합 플래너</span>
+        </button>
+        <button onclick="switchTab('work')" id="tabBtn-work" class="tab-btn px-3 sm:px-4 py-1.5 rounded-t-lg transition bg-coverDark/50 text-slate-300 hover:text-white font-bold text-xs flex items-center gap-1.5">
+          <i class="fa-solid fa-briefcase text-blue-300"></i><span>업무 노트</span>
+        </button>
+        <button onclick="switchTab('study')" id="tabBtn-study" class="tab-btn px-3 sm:px-4 py-1.5 rounded-t-lg transition bg-coverDark/50 text-slate-300 hover:text-white font-bold text-xs flex items-center gap-1.5">
+          <i class="fa-solid fa-graduation-cap text-emerald-300"></i><span>학업 D-Day</span>
+        </button>
+        <button onclick="switchTab('diary')" id="tabBtn-diary" class="tab-btn px-3 sm:px-4 py-1.5 rounded-t-lg transition bg-coverDark/50 text-slate-300 hover:text-white font-bold text-xs flex items-center gap-1.5">
+          <i class="fa-solid fa-book-open text-indigo-300"></i><span>나만의 일기</span>
+        </button>
+        <button onclick="openScheduleModal()" class="ml-2 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold flex items-center gap-1 shadow transition">
+          <i class="fa-solid fa-pen text-[10px]"></i><span>기록 추가</span>
+        </button>
+      </nav>
+    </header>
+
+    <!-- 다이어리 펼침 내지 본문 -->
+    <main class="w-full flex-1 bg-paperBg rounded-2xl border border-paperLine shadow-inner p-4 sm:p-7 relative overflow-hidden flex flex-col justify-between">
+      
+      <!-- ================= 탭 1: 통합 캘린더 대시보드 ================= -->
+      <section id="view-dashboard" class="tab-view space-y-6 flex-1">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-7">
+          
+          <!-- 좌측: 캘린더 -->
+          <div class="lg:col-span-8 lg:pr-6 border-b lg:border-b-0 lg:border-r border-paperLine pb-6 lg:pb-0">
+            <div class="flex flex-wrap items-center justify-between pb-3 border-b-2 border-stone-800 gap-2">
+              <div class="flex items-center gap-3">
+                <h2 id="calCurrentMonthYear" class="text-2xl font-extrabold tracking-tight text-inkText">2026. 11</h2>
+                <div class="flex items-center gap-1">
+                  <button onclick="changeMonth(-1)" class="w-7 h-7 rounded border border-stone-300 hover:bg-stone-100 flex items-center justify-center text-xs text-stone-600 transition"><i class="fa-solid fa-chevron-left"></i></button>
+                  <button onclick="goToday()" class="px-2.5 h-7 rounded border border-stone-300 hover:bg-stone-100 text-xs font-bold text-stone-700 transition">TODAY</button>
+                  <button onclick="changeMonth(1)" class="w-7 h-7 rounded border border-stone-300 hover:bg-stone-100 flex items-center justify-center text-xs text-stone-600 transition"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+              </div>
+              <div class="flex items-center gap-1.5 text-[11px] font-bold">
+                <span class="px-2 py-0.5 rounded bg-work-bg text-work-text border border-work-border">● 업무</span>
+                <span class="px-2 py-0.5 rounded bg-study-bg text-study-text border border-study-border">● 학업</span>
+                <span class="px-2 py-0.5 rounded bg-personal-bg text-personal-text border border-personal-border">● 개인</span>
+                <span class="px-2 py-0.5 rounded bg-amber-50 text-amber-900 border border-amber-200">✍️ 일기</span>
+              </div>
+            </div>
+
+            <!-- 요일 -->
+            <div class="grid grid-cols-7 gap-1 mt-3 text-center text-xs font-bold text-stone-500 py-1 border-b border-paperLine">
+              <div class="text-rose-700">SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div class="text-blue-700">SAT</div>
+            </div>
+            <!-- 달력 셀 그리드 -->
+            <div id="calendarGrid" class="grid grid-cols-7 gap-1 mt-1 text-xs"></div>
+          </div>
+
+          <!-- 우측: 타임라인 -->
+          <div class="lg:col-span-4 lg:pl-3 flex flex-col justify-between">
+            <div>
+              <div class="washi-tape px-4 py-1.5 mx-auto text-center w-fit mb-3 transform -rotate-1 rounded-sm">
+                <span class="text-[11px] font-bold text-stone-600 tracking-wider">SCHEDULE OF THE DAY</span>
+              </div>
+              <div class="flex items-center justify-between pb-2 border-b border-stone-300">
+                <h3 id="selectedDateText" class="text-lg font-bold text-inkText">2026. 11. 06 (금)</h3>
+                <button onclick="openScheduleModalWithDate()" class="text-xs font-bold text-stone-700 hover:text-black flex items-center gap-1 underline underline-offset-2">
+                  <i class="fa-solid fa-plus text-[10px]"></i> 일정 기록
+                </button>
+              </div>
+
+              <div id="selectedTimelineList" class="mt-3 space-y-2.5 max-h-[480px] overflow-y-auto pr-1"></div>
+            </div>
+
+            <div id="dashboardDiaryNotification" class="mt-6 p-3 rounded-xl bg-amber-50/80 border border-amber-200/80 flex items-center justify-between text-xs">
+              <span class="flex items-center gap-2 text-stone-700 font-bold">
+                <i class="fa-solid fa-feather-pointed text-amber-800"></i>
+                <span id="dashDiaryStatusText">기록된 다이어리 없음</span>
+              </span>
+              <button onclick="jumpToDiaryDate()" class="text-amber-900 font-extrabold hover:underline">펼쳐보기 &rarr;</button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ================= 탭 2: 업무 노트 ================= -->
+      <section id="view-work" class="tab-view hidden space-y-6 flex-1">
+        <div class="flex items-center justify-between pb-3 border-b-2 border-stone-800">
+          <div>
+            <h2 class="text-xl font-extrabold flex items-center gap-2">
+              <i class="fa-regular fa-clipboard text-blue-900"></i> 업무 체크리스트 (Work Checklist)
+            </h2>
+            <p class="text-xs text-stone-500 mt-1">완료된 업무는 체크 표시를 하여 깔끔하게 정리할 수 있습니다.</p>
+          </div>
+          <button onclick="openScheduleModal('work')" class="px-3.5 py-1.5 bg-blue-900 hover:bg-blue-950 text-white rounded-lg text-xs font-bold shadow transition">
+            + 업무 추가
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="bg-white/80 p-5 rounded-2xl border border-paperLine shadow-sm">
+            <h3 class="font-bold text-sm text-blue-950 flex items-center justify-between mb-3 pb-2 border-b border-paperLine">
+              <span>남은 할 일 (<span id="workActiveCount">0</span>)</span>
+              <span class="text-[11px] text-stone-400 font-bold">TO DO</span>
+            </h3>
+            <div id="workActiveList" class="space-y-2.5 max-h-[500px] overflow-y-auto pr-1"></div>
+          </div>
+
+          <div class="bg-stone-50/60 p-5 rounded-2xl border border-paperLine shadow-sm">
+            <h3 class="font-bold text-sm text-stone-500 flex items-center justify-between mb-3 pb-2 border-b border-paperLine">
+              <span>완료된 일 (<span id="workDoneCount">0</span>)</span>
+              <span class="text-[11px] text-stone-400 font-bold">COMPLETED</span>
+            </h3>
+            <div id="workDoneList" class="space-y-2.5 max-h-[500px] overflow-y-auto pr-1 opacity-60"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 탭 3: 학업 D-Day ================= -->
+      <section id="view-study" class="tab-view hidden space-y-6 flex-1">
+        <div class="flex items-center justify-between pb-3 border-b-2 border-stone-800">
+          <div>
+            <h2 class="text-xl font-extrabold flex items-center gap-2">
+              <i class="fa-solid fa-bookmark text-emerald-800"></i> 학업 & 시험 마감 인덱스 (D-Day Cards)
+            </h2>
+            <p class="text-xs text-stone-500 mt-1">다가오는 과제와 시험 일정을 마감 긴급도순으로 확인합니다.</p>
+          </div>
+          <button onclick="openScheduleModal('study')" class="px-3.5 py-1.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg text-xs font-bold shadow transition">
+            + 과제/일정 등록
+          </button>
+        </div>
+
+        <div id="studyDdayCards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
+
+        <div class="bg-white/80 p-5 rounded-2xl border border-paperLine shadow-sm">
+          <h3 class="font-bold text-sm text-emerald-950 mb-3 pb-2 border-b border-paperLine">전체 학업 타임라인 목록</h3>
+          <div id="studyAllList" class="divide-y divide-paperLine"></div>
+        </div>
+      </section>
+
+      <!-- ================= 탭 4: 나만의 다이어리 ================= -->
+      <section id="view-diary" class="tab-view hidden space-y-6 flex-1">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-7">
+          
+          <div class="lg:col-span-6 lg:pr-4 border-b lg:border-b-0 lg:border-r border-paperLine pb-6 lg:pb-0">
+            <div class="flex items-center justify-between pb-3 border-b-2 border-stone-800">
+              <div>
+                <span class="text-[10px] font-bold text-amber-800 tracking-wider">MONTHLY ARCHIVE</span>
+                <h2 id="diaryMonthYearText" class="text-2xl font-extrabold text-inkText mt-0.5">2026. 11</h2>
+              </div>
+              <div class="flex items-center gap-1">
+                <button onclick="changeDiaryMonth(-1)" class="w-7 h-7 rounded border border-stone-300 hover:bg-stone-100 flex items-center justify-center text-xs text-stone-600 transition"><i class="fa-solid fa-chevron-left"></i></button>
+                <button onclick="goDiaryToday()" class="px-2.5 h-7 rounded border border-stone-300 hover:bg-stone-100 text-xs font-bold text-stone-700 transition">TODAY</button>
+                <button onclick="changeDiaryMonth(1)" class="w-7 h-7 rounded border border-stone-300 hover:bg-stone-100 flex items-center justify-center text-xs text-stone-600 transition"><i class="fa-solid fa-chevron-right"></i></button>
+              </div>
+            </div>
+            
+            <div class="grid grid-cols-7 gap-1 mt-3 text-center text-xs font-bold text-stone-500 py-1 border-b border-paperLine">
+              <div class="text-rose-700">SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div class="text-blue-700">SAT</div>
+            </div>
+            <div id="diaryCalendarGrid" class="grid grid-cols-7 gap-1 mt-1 text-xs"></div>
+          </div>
+
+          <div class="lg:col-span-6 lg:pl-4 bg-white/90 p-6 rounded-2xl border border-paperLine shadow-sm flex flex-col justify-between relative">
+            
+            <div class="washi-tape px-6 py-1 mx-auto text-center w-fit -mt-8 mb-3 transform rotate-1 rounded-sm z-10">
+              <span class="text-xs font-bold text-stone-700">Today's Reflection</span>
+            </div>
+
+            <div class="space-y-4">
+              <div class="flex items-center justify-between pb-2 border-b border-paperLine">
+                <h3 id="diarySelectedDateTitle" class="text-lg font-bold text-inkText">2026년 11월 06일의 기록</h3>
+                <button onclick="deleteDiary()" id="btnDeleteDiary" class="hidden text-xs text-rose-600 hover:text-rose-800 font-bold">
+                  <i class="fa-regular fa-trash-can"></i> 일기 삭제
+                </button>
+              </div>
+
+              <div class="bg-paperBg p-3 rounded-xl border border-paperLine">
+                <span class="text-[11px] font-bold text-stone-500 block mb-1.5">
+                  <i class="fa-solid fa-paperclip text-stone-400"></i> 이 날 함께한 일정 기록:
+                </span>
+                <div id="diaryLinkedScheduleTags" class="flex flex-wrap gap-1.5 text-xs"></div>
+              </div>
+
+              <div class="space-y-3">
+                <div>
+                  <label class="block text-xs font-bold text-stone-600 mb-1">제목 (플래너에 보일 한 줄)</label>
+                  <input type="text" id="diaryTitleInput" placeholder="오늘 하루를 한 문장으로 정의한다면" class="w-full px-3 py-2 text-xs sm:text-sm rounded-lg border border-stone-300 focus:outline-none focus:border-stone-800 bg-paperBg font-bold">
+                </div>
+
+                <div>
+                  <label class="block text-xs font-bold text-stone-600 mb-1">오늘의 속마음 (본문)</label>
+                  <textarea id="diaryContentInput" rows="6" placeholder="자유롭게 하루의 생각과 감정을 남겨보세요..." class="w-full p-3 text-xs sm:text-sm rounded-lg border border-stone-300 focus:outline-none focus:border-stone-800 bg-paperBg lined-paper resize-none leading-relaxed"></textarea>
+                </div>
+
+                <div>
+                  <div class="flex items-center justify-between mb-1.5">
+                    <span class="text-xs font-bold text-stone-600">추억 사진 첨부 (폴라로이드)</span>
+                    <label for="diaryPhotoUpload" class="text-xs text-amber-900 hover:text-black font-extrabold cursor-pointer underline">
+                      <i class="fa-solid fa-camera-retro"></i> 사진 꽂아넣기
+                    </label>
+                    <input type="file" id="diaryPhotoUpload" multiple accept="image/*" class="hidden" onchange="handlePhotoUpload(event)">
+                  </div>
+
+                  <div id="diaryPhotoGrid" class="grid grid-cols-3 gap-3 min-h-[90px] p-2 bg-stone-100/60 rounded-xl border border-dashed border-stone-300">
+                    <span id="noPhotoText" class="col-span-3 text-center text-xs text-stone-400 self-center py-4">붙여둔 사진이 없습니다.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-4 border-t border-paperLine mt-4 flex justify-end">
+              <button onclick="saveDiary()" class="px-6 py-2 bg-stone-800 hover:bg-stone-900 text-paperBg rounded-xl text-xs sm:text-sm font-bold shadow-md transition flex items-center gap-1.5">
+                <i class="fa-solid fa-feather"></i> 다이어리에 저장
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- 모달 1: 일정 등록 / 수정 -->
+  <div id="scheduleModal" class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-paperBg rounded-2xl border border-stone-400 w-full max-w-md p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-paperLine">
+        <h3 id="scheduleModalTitle" class="text-base font-bold text-inkText">새 일정 기록</h3>
+        <button onclick="closeScheduleModal()" class="text-stone-400 hover:text-stone-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+
+      <form id="scheduleForm" onsubmit="handleScheduleSubmit(event)" class="space-y-3.5 text-xs">
+        <input type="hidden" id="schedId">
+
+        <div>
+          <label class="block font-bold text-stone-700 mb-1">용도 분류</label>
+          <div class="grid grid-cols-3 gap-2">
+            <label class="flex items-center justify-center gap-1.5 p-2 rounded-lg border border-stone-300 cursor-pointer font-bold text-stone-700 has-[:checked]:bg-work-bg has-[:checked]:text-work-text has-[:checked]:border-work-border">
+              <input type="radio" name="schedCategory" value="work" checked class="hidden"> 💼 업무
+            </label>
+            <label class="flex items-center justify-center gap-1.5 p-2 rounded-lg border border-stone-300 cursor-pointer font-bold text-stone-700 has-[:checked]:bg-study-bg has-[:checked]:text-study-text has-[:checked]:border-study-border">
+              <input type="radio" name="schedCategory" value="study" class="hidden"> 🎓 학업
+            </label>
+            <label class="flex items-center justify-center gap-1.5 p-2 rounded-lg border border-stone-300 cursor-pointer font-bold text-stone-700 has-[:checked]:bg-personal-bg has-[:checked]:text-personal-text has-[:checked]:border-personal-border">
+              <input type="radio" name="schedCategory" value="personal" class="hidden"> ☕ 개인
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="font-bold text-stone-700">일정명</label>
+            <label class="flex items-center gap-1.5 font-bold text-rose-700 cursor-pointer">
+              <input type="checkbox" id="schedIsImp" class="rounded text-rose-700 focus:ring-0">
+              <i class="fa-solid fa-star text-xs"></i> 주요 일정 (별표 스티커)
+            </label>
+          </div>
+          <input type="text" id="schedTitle" required placeholder="일정을 입력하세요" class="w-full px-3 py-2 rounded-lg border border-stone-300 focus:outline-none focus:border-stone-800 bg-white font-bold">
+        </div>
+
+        <div class="bg-stone-100/70 p-3 rounded-xl border border-stone-200 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-stone-700">일시</span>
+            <label class="flex items-center gap-1.5 text-stone-600 cursor-pointer font-bold">
+              <input type="checkbox" id="schedIsAllDay" checked onchange="toggleTimeInputs()" class="rounded text-stone-900 focus:ring-0"> 종일 (All Day)
+            </label>
+          </div>
+          <input type="date" id="schedDate" required class="w-full px-3 py-1.5 rounded-lg border border-stone-300 bg-white font-bold">
+          <div id="timeInputsGroup" class="hidden grid-cols-2 gap-2">
+            <div>
+              <span class="text-[10px] text-stone-500 font-bold block mb-0.5">시작</span>
+              <input type="time" id="schedStartTime" class="w-full px-2 py-1.5 rounded-lg border border-stone-300 bg-white font-bold">
+            </div>
+            <div>
+              <span class="text-[10px] text-stone-500 font-bold block mb-0.5">종료</span>
+              <input type="time" id="schedEndTime" class="w-full px-2 py-1.5 rounded-lg border border-stone-300 bg-white font-bold">
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-stone-700 mb-1">메모</label>
+          <textarea id="schedMemo" rows="2" placeholder="간단한 메모를 남기세요." class="w-full px-3 py-2 rounded-lg border border-stone-300 focus:outline-none focus:border-stone-800 bg-white resize-none"></textarea>
+        </div>
+
+        <div class="flex justify-between items-center pt-3 border-t border-paperLine">
+          <button type="button" onclick="deleteCurrentSchedule()" id="btnDeleteSched" class="hidden text-rose-700 hover:text-rose-900 font-bold">삭제</button>
+          <div class="flex gap-2 ml-auto">
+            <button type="button" onclick="closeScheduleModal()" class="px-3.5 py-1.5 rounded-lg border border-stone-300 text-stone-600 font-bold hover:bg-stone-100">취소</button>
+            <button type="submit" class="px-5 py-1.5 rounded-lg bg-stone-900 text-paperBg font-bold hover:bg-black">저장</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 모달 2: 사진 라이트박스 -->
+  <div id="photoLightboxModal" class="fixed inset-0 bg-black/85 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4" onclick="closeLightbox()">
+    <div class="relative max-w-3xl max-h-[90vh] flex flex-col items-center" onclick="event.stopPropagation()">
+      <button onclick="closeLightbox()" class="absolute -top-10 right-0 text-white hover:text-stone-300 text-xl font-bold"><i class="fa-solid fa-xmark"></i></button>
+      <div class="bg-white p-3 pb-8 rounded-lg shadow-2xl">
+        <img id="lightboxImg" src="" alt="확대 사진" class="rounded max-h-[75vh] w-auto object-contain">
+      </div>
+    </div>
+  </div>
+
+  <!-- 모달 3: 일기 상세 뷰어 -->
+  <div id="diaryDetailModal" class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-paperBg rounded-2xl border border-stone-400 w-full max-w-lg p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-paperLine">
+        <div>
+          <span id="viewDiaryDate" class="text-xs font-bold text-amber-800 uppercase">2026-11-06</span>
+          <h3 id="viewDiaryTitle" class="text-xl font-extrabold text-inkText mt-0.5">일기 제목</h3>
+        </div>
+        <button onclick="closeDiaryDetailModal()" class="text-stone-400 hover:text-stone-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+
+      <div class="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
+        <p id="viewDiaryContent" class="text-sm text-stone-800 whitespace-pre-wrap leading-relaxed lined-paper py-1"></p>
+        <div id="viewDiaryPhotos" class="grid grid-cols-3 gap-2.5 pt-2"></div>
+      </div>
+
+      <div class="flex justify-between items-center pt-3 border-t border-paperLine">
+        <button onclick="editDiaryFromModal()" class="text-xs text-amber-900 font-extrabold underline">다시 수정하기</button>
+        <button onclick="closeDiaryDetailModal()" class="px-5 py-1.5 rounded-lg bg-stone-900 text-paperBg text-xs font-bold">닫기</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentDate = new Date();
+    let selectedDateStr = formatDate(currentDate);
+
+    let diaryCalDate = new Date();
+    let selectedDiaryDateStr = formatDate(currentDate);
+
+    const STORAGE_KEY_SCHEDS = 'my_life_hub_schedules_v1';
+    const STORAGE_KEY_DIARIES = 'my_life_hub_diaries_v1';
+
+    const defaultSchedules = [
+      { id: '1', category: 'work', title: '산학연 네트워크 성과 보고서 검토', isImp: true, isAllDay: false, date: '2026-11-06', startTime: '10:00', endTime: '11:30', memo: '예산 집행률 및 4분기 지표 포함', done: false },
+      { id: '2', category: 'study', title: '회귀분석 과제 최종 제출', isImp: true, isAllDay: true, date: '2026-11-06', startTime: '', endTime: '', memo: 'SAS 로지스틱 ROC 그래프 첨부 필수', done: false },
+      { id: '3', category: 'personal', title: '피트니스 하체 루틴', isImp: false, isAllDay: false, date: '2026-11-06', startTime: '20:30', endTime: '22:00', memo: '레그프레스 및 스트레칭', done: false },
+      { id: '4', category: 'study', title: '실험계획법 중간 퀴즈', isImp: false, isAllDay: true, date: '2026-11-14', startTime: '', endTime: '', memo: '분산분석표 해석 점검', done: false },
+      { id: '5', category: 'study', title: '2학기 기말 종합 평가', isImp: true, isAllDay: true, date: '2026-12-12', startTime: '', endTime: '', memo: '통계 패키지 종합', done: false }
+    ];
+
+    const defaultDiaries = {
+      '2026-11-06': {
+        date: '2026-11-06',
+        title: '과제 제출을 끝내서 마음이 홀가분한 날',
+        content: '오전 회의 준비로 다소 분주했으나 오후에 데이터 회귀분석 과제를 무사히 마감할 수 있었다. 저녁 운동까지 빼먹지 않고 다녀와서 뿌듯하다.',
+        photos: []
+      }
+    };
+
+    let schedules = JSON.parse(localStorage.getItem(STORAGE_KEY_SCHEDS)) || defaultSchedules;
+    let diaries = JSON.parse(localStorage.getItem(STORAGE_KEY_DIARIES)) || defaultDiaries;
+    let tempDiaryPhotos = [];
+
+    function saveToStorage() {
+      localStorage.setItem(STORAGE_KEY_SCHEDS, JSON.stringify(schedules));
+      localStorage.setItem(STORAGE_KEY_DIARIES, JSON.stringify(diaries));
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-view').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('bg-paperBg', 'text-inkText', 'shadow', 'border-t', 'border-x', 'border-paperLine');
+        btn.classList.add('bg-coverDark/50', 'text-slate-300');
+      });
+
+      document.getElementById(`view-${tabId}`).classList.remove('hidden');
+      const activeBtn = document.getElementById(`tabBtn-${tabId}`);
+      activeBtn.classList.add('bg-paperBg', 'text-inkText', 'shadow', 'border-t', 'border-x', 'border-paperLine');
+      activeBtn.classList.remove('bg-coverDark/50', 'text-slate-300');
+
+      if (tabId === 'dashboard') renderDashboard();
+      if (tabId === 'work') renderWorkTab();
+      if (tabId === 'study') renderStudyTab();
+      if (tabId === 'diary') renderDiaryTab();
+    }
+
+    function formatDate(d) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function getDDay(targetDateStr) {
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      const target = new Date(targetDateStr);
+      target.setHours(0,0,0,0);
+      const diffTime = target - today;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      if (diffDays === 0) return 'D-Day';
+      if (diffDays > 0) return `D-${diffDays}`;
+      return `D+${Math.abs(diffDays)}`;
+    }
+
+    function renderDashboard() {
+      document.getElementById('calCurrentMonthYear').textContent = `${currentDate.getFullYear()}. ${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
+      renderDashboardCalendar();
+      renderSelectedDateTimeline();
+    }
+
+    function renderDashboardCalendar() {
+      const grid = document.getElementById('calendarGrid');
+      grid.innerHTML = '';
+
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth();
+
+      const firstDayIndex = new Date(year, month, 1).getDay();
+      const lastDay = new Date(year, month + 1, 0).getDate();
+      const prevLastDay = new Date(year, month, 0).getDate();
+
+      // 이전 달 날짜 (고정 높이 h-[105px])
+      for (let i = firstDayIndex - 1; i >= 0; i--) {
+        const cell = document.createElement('div');
+        cell.className = 'h-[105px] p-1.5 rounded-lg border border-transparent text-stone-300 opacity-40 overflow-hidden';
+        cell.innerHTML = `<span class="font-bold text-[11px]">${prevLastDay - i}</span>`;
+        grid.appendChild(cell);
+      }
+
+      const todayStr = formatDate(new Date());
+
+      // 현재 달 날짜 (고정 높이 h-[105px] 및 flex 구조 고정)
+      for (let day = 1; day <= lastDay; day++) {
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const dayScheds = schedules.filter(s => s.date === dateStr);
+        const hasDiary = !!diaries[dateStr];
+        const isSelected = (dateStr === selectedDateStr);
+        const isToday = (dateStr === todayStr);
+
+        const cell = document.createElement('div');
+        cell.className = `h-[105px] p-1.5 rounded-lg border transition cursor-pointer flex flex-col overflow-hidden ${
+          isSelected ? 'border-stone-800 bg-amber-50/60 shadow-sm ring-1 ring-stone-800' : 'border-stone-200/90 bg-white/70 hover:border-stone-400'
+        }`;
+        cell.onclick = () => {
+          selectedDateStr = dateStr;
+          renderDashboard();
+        };
+
+        let topBarHtml = `
+          <div class="flex items-center justify-between shrink-0 mb-1">
+            <span class="font-bold text-[12px] ${isToday ? 'w-5 h-5 rounded-full bg-stone-900 text-paperBg flex items-center justify-center text-[10px]' : 'text-stone-800'}">${day}</span>
+            ${hasDiary ? '<span title="일기 작성됨" class="text-[10px] text-amber-800 font-bold">✍️</span>' : ''}
+          </div>
+        `;
+
+        // 일정 칩 영역 (최대 2개 노출 + 초과시 +N 표시로 셀 크기 불변)
+        let dotsHtml = '<div class="space-y-1 overflow-hidden flex-1">';
+        dayScheds.slice(0, 2).forEach(s => {
+          let badgeCol = s.category === 'work' ? 'bg-work-bg text-work-text border-work-border' : (s.category === 'study' ? 'bg-study-bg text-study-text border-study-border' : 'bg-personal-bg text-personal-text border-personal-border');
+          dotsHtml += `
+            <div class="truncate text-[10px] px-1 py-0.5 rounded border ${badgeCol} font-bold flex items-center gap-1 shadow-2xs leading-tight">
+              ${s.isImp ? '<span class="text-rose-600 font-bold shrink-0">★</span>' : ''}
+              <span class="truncate">${s.title}</span>
+            </div>
+          `;
+        });
+        if (dayScheds.length > 2) {
+          dotsHtml += `<div class="text-[9px] text-stone-400 font-bold pl-0.5 leading-none mt-0.5">+${dayScheds.length - 2}</div>`;
+        }
+        dotsHtml += '</div>';
+
+        cell.innerHTML = topBarHtml + dotsHtml;
+        grid.appendChild(cell);
+      }
+    }
+
+    function renderSelectedDateTimeline() {
+      document.getElementById('selectedDateText').textContent = selectedDateStr;
+      const timeline = document.getElementById('selectedTimelineList');
+      timeline.innerHTML = '';
+
+      const dayScheds = schedules.filter(s => s.date === selectedDateStr);
+
+      if (dayScheds.length === 0) {
+        timeline.innerHTML = `
+          <div class="h-44 flex flex-col items-center justify-center text-center text-stone-400 space-y-1">
+            <i class="fa-regular fa-calendar-xmark text-2xl"></i>
+            <span class="text-xs font-bold">기록된 일정이 없습니다.</span>
+          </div>
+        `;
+      } else {
+        dayScheds.forEach(s => {
+          let catLabel = s.category === 'work' ? '업무' : (s.category === 'study' ? '학업' : '개인');
+          let catCol = s.category === 'work' ? 'text-blue-900 bg-blue-100' : (s.category === 'study' ? 'text-emerald-900 bg-emerald-100' : 'text-amber-900 bg-amber-100');
+
+          const item = document.createElement('div');
+          item.className = 'p-3 rounded-xl border border-stone-200 bg-white shadow-2xs hover:border-stone-400 transition cursor-pointer relative';
+          item.onclick = () => openScheduleModal(null, s.id);
+
+          item.innerHTML = `
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-1.5">
+                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${catCol}">${catLabel}</span>
+                ${s.isImp ? '<span class="text-xs text-rose-600 font-bold">★</span>' : ''}
+                <span class="font-bold text-xs text-inkText">${s.title}</span>
+              </div>
+              <span class="text-[10px] font-bold text-stone-400">${s.isAllDay ? 'ALL DAY' : `${s.startTime || ''} ~ ${s.endTime || ''}`}</span>
+            </div>
+            ${s.memo ? `<p class="text-[11px] text-stone-500 mt-1 line-clamp-1">${s.memo}</p>` : ''}
+          `;
+          timeline.appendChild(item);
+        });
+      }
+
+      const hasDiary = !!diaries[selectedDateStr];
+      const statusText = document.getElementById('dashDiaryStatusText');
+      if (hasDiary) {
+        statusText.innerHTML = `<span class="text-amber-900 font-bold">작성된 일기가 있습니다</span>`;
+      } else {
+        statusText.innerHTML = `기록된 다이어리 없음`;
+      }
+    }
+
+    function changeMonth(delta) {
+      currentDate.setMonth(currentDate.getMonth() + delta);
+      renderDashboard();
+    }
+    function goToday() {
+      currentDate = new Date();
+      selectedDateStr = formatDate(currentDate);
+      renderDashboard();
+    }
+
+    function jumpToDiaryDate() {
+      selectedDiaryDateStr = selectedDateStr;
+      diaryCalDate = new Date(selectedDateStr);
+      switchTab('diary');
+    }
+
+    function renderWorkTab() {
+      const activeContainer = document.getElementById('workActiveList');
+      const doneContainer = document.getElementById('workDoneList');
+      activeContainer.innerHTML = '';
+      doneContainer.innerHTML = '';
+
+      const workTasks = schedules.filter(s => s.category === 'work');
+      let activeCount = 0;
+      let doneCount = 0;
+
+      workTasks.forEach(s => {
+        const card = document.createElement('div');
+        card.className = 'p-3 rounded-xl border border-stone-200 bg-white flex items-start gap-3 shadow-2xs';
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = !!s.done;
+        checkbox.className = 'mt-1 rounded text-stone-900 focus:ring-0 cursor-pointer';
+        checkbox.onchange = (e) => {
+          s.done = e.target.checked;
+          saveToStorage();
+          renderWorkTab();
+        };
+
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'flex-1 cursor-pointer';
+        contentDiv.onclick = () => openScheduleModal(null, s.id);
+        contentDiv.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-xs ${s.done ? 'line-through text-stone-400' : 'text-inkText'}">${s.isImp ? '<span class="text-rose-600">★</span> ' : ''}${s.title}</span>
+            <span class="text-[10px] font-bold text-stone-400">${s.date}</span>
+          </div>
+          ${s.memo ? `<p class="text-[11px] text-stone-500 mt-0.5 line-clamp-2">${s.memo}</p>` : ''}
+        `;
+
+        card.appendChild(checkbox);
+        card.appendChild(contentDiv);
+
+        if (s.done) {
+          doneCount++;
+          doneContainer.appendChild(card);
+        } else {
+          activeCount++;
+          activeContainer.appendChild(card);
+        }
+      });
+
+      document.getElementById('workActiveCount').textContent = activeCount;
+      document.getElementById('workDoneCount').textContent = doneCount;
+
+      if (activeCount === 0) activeContainer.innerHTML = '<p class="text-xs text-stone-400 text-center py-6 font-bold">남은 업무가 없습니다.</p>';
+      if (doneCount === 0) doneContainer.innerHTML = '<p class="text-xs text-stone-400 text-center py-6 font-bold">완료된 업무가 없습니다.</p>';
+    }
+
+    function renderStudyTab() {
+      const cardsGrid = document.getElementById('studyDdayCards');
+      const listContainer = document.getElementById('studyAllList');
+      cardsGrid.innerHTML = '';
+      listContainer.innerHTML = '';
+
+      const studyList = schedules.filter(s => s.category === 'study')
+        .sort((a,b) => new Date(a.date) - new Date(b.date));
+
+      studyList.forEach((s, idx) => {
+        const dday = getDDay(s.date);
+        const isUrgent = dday === 'D-Day' || dday.startsWith('D-') && parseInt(dday.replace('D-', '')) <= 7;
+
+        if (idx < 4) {
+          const card = document.createElement('div');
+          card.className = `p-4 rounded-xl border ${isUrgent ? 'border-rose-300 bg-rose-50/70 shadow' : 'border-stone-300 bg-amber-50/70 shadow-sm'} flex flex-col justify-between transform hover:-translate-y-0.5 transition`;
+          card.innerHTML = `
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="px-2 py-0.5 rounded text-[11px] font-extrabold ${isUrgent ? 'bg-rose-700 text-white' : 'bg-emerald-800 text-white'}">${dday}</span>
+                ${s.isImp ? '<span class="text-xs text-rose-700 font-bold">★ 중요</span>' : ''}
+              </div>
+              <h4 class="font-bold text-xs text-inkText line-clamp-2">${s.title}</h4>
+            </div>
+            <div class="mt-3 text-[10px] text-stone-500 font-bold">${s.date}</div>
+          `;
+          cardsGrid.appendChild(card);
+        }
+
+        const row = document.createElement('div');
+        row.className = 'py-3 flex items-center justify-between hover:bg-stone-50 px-2 rounded-lg cursor-pointer transition';
+        row.onclick = () => openScheduleModal(null, s.id);
+        row.innerHTML = `
+          <div class="flex items-center gap-3">
+            <span class="w-14 font-extrabold text-xs text-emerald-900">${dday}</span>
+            <div>
+              <span class="font-bold text-xs text-inkText">${s.isImp ? '<span class="text-rose-600">★</span> ' : ''}${s.title}</span>
+              ${s.memo ? `<p class="text-[11px] text-stone-500">${s.memo}</p>` : ''}
+            </div>
+          </div>
+          <span class="text-xs font-bold text-stone-400">${s.date}</span>
+        `;
+        listContainer.appendChild(row);
+      });
+
+      if (studyList.length === 0) {
+        cardsGrid.innerHTML = '<div class="col-span-4 text-center py-6 text-xs text-stone-400 font-bold">등록된 학업/과제 일정이 없습니다.</div>';
+      }
+    }
+
+    function renderDiaryTab() {
+      document.getElementById('diaryMonthYearText').textContent = `${diaryCalDate.getFullYear()}. ${String(diaryCalDate.getMonth() + 1).padStart(2, '0')}`;
+      renderDiaryCalendar();
+      loadDiaryFormForDate(selectedDiaryDateStr);
+    }
+
+    function renderDiaryCalendar() {
+      const grid = document.getElementById('diaryCalendarGrid');
+      grid.innerHTML = '';
+
+      const year = diaryCalDate.getFullYear();
+      const month = diaryCalDate.getMonth();
+
+      const firstDayIndex = new Date(year, month, 1).getDay();
+      const lastDay = new Date(year, month + 1, 0).getDate();
+      const prevLastDay = new Date(year, month, 0).getDate();
+
+      // 다이어리 달력도 동일하게 h-[105px] 고정 크기 적용
+      for (let i = firstDayIndex - 1; i >= 0; i--) {
+        const cell = document.createElement('div');
+        cell.className = 'h-[105px] p-1.5 rounded-lg border border-transparent text-stone-300 opacity-40 overflow-hidden';
+        cell.innerHTML = `<span class="font-bold text-[11px]">${prevLastDay - i}</span>`;
+        grid.appendChild(cell);
+      }
+
+      for (let day = 1; day <= lastDay; day++) {
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const diaryEntry = diaries[dateStr];
+        const isSelected = (dateStr === selectedDiaryDateStr);
+
+        const cell = document.createElement('div');
+        cell.className = `h-[105px] p-1.5 rounded-lg border transition cursor-pointer flex flex-col justify-between overflow-hidden ${
+          isSelected ? 'border-amber-800 bg-amber-50/70 shadow-sm ring-1 ring-amber-800' : 'border-stone-200/90 bg-white/70 hover:border-stone-400'
+        }`;
+        cell.onclick = () => {
+          selectedDiaryDateStr = dateStr;
+          renderDiaryTab();
+        };
+
+        let cellContent = `
+          <div class="flex items-center justify-between shrink-0">
+            <span class="font-bold text-[11px] text-stone-800">${day}</span>
+            ${diaryEntry && diaryEntry.photos && diaryEntry.photos.length > 0 ? '<span class="text-[10px] text-amber-800"><i class="fa-regular fa-image"></i></span>' : ''}
+          </div>
+        `;
+
+        if (diaryEntry && diaryEntry.title) {
+          cellContent += `
+            <div onclick="event.stopPropagation(); showDiaryDetailModal('${dateStr}')" title="상세 읽기" class="mt-1 p-1 bg-amber-100/70 hover:bg-amber-200/80 rounded border border-amber-300/60 text-[10px] font-bold text-amber-950 truncate transition shadow-2xs">
+              ${diaryEntry.title}
+            </div>
+          `;
+        } else {
+          cellContent += `<div class="text-[9px] text-stone-300 mt-2 text-center font-bold">+ 일기쓰기</div>`;
+        }
+
+        cell.innerHTML = cellContent;
+        grid.appendChild(cell);
+      }
+    }
+
+    function loadDiaryFormForDate(dateStr) {
+      document.getElementById('diarySelectedDateTitle').textContent = `${dateStr}의 기록`;
+      const diary = diaries[dateStr];
+      const titleInput = document.getElementById('diaryTitleInput');
+      const contentInput = document.getElementById('diaryContentInput');
+      const deleteBtn = document.getElementById('btnDeleteDiary');
+
+      const linkedScheds = schedules.filter(s => s.date === dateStr);
+      const tagContainer = document.getElementById('diaryLinkedScheduleTags');
+      tagContainer.innerHTML = '';
+
+      if (linkedScheds.length === 0) {
+        tagContainer.innerHTML = '<span class="text-stone-400 text-[11px] font-bold">연동된 일정이 없습니다.</span>';
+      } else {
+        linkedScheds.forEach(s => {
+          const tag = document.createElement('span');
+          let tagColor = s.category === 'work' ? 'bg-blue-100 text-blue-900 border-blue-200' : (s.category === 'study' ? 'bg-emerald-100 text-emerald-900 border-emerald-200' : 'bg-amber-100 text-amber-900 border-amber-200');
+          tag.className = `px-2 py-0.5 rounded border text-[10px] font-bold ${tagColor}`;
+          tag.textContent = `${s.category === 'work' ? '💼' : (s.category === 'study' ? '🎓' : '☕')} ${s.title}`;
+          tagContainer.appendChild(tag);
+        });
+      }
+
+      if (diary) {
+        titleInput.value = diary.title || '';
+        contentInput.value = diary.content || '';
+        tempDiaryPhotos = diary.photos ? [...diary.photos] : [];
+        deleteBtn.classList.remove('hidden');
+      } else {
+        titleInput.value = '';
+        contentInput.value = '';
+        tempDiaryPhotos = [];
+        deleteBtn.classList.add('hidden');
+      }
+      renderPhotoGrid();
+    }
+
+    function handlePhotoUpload(event) {
+      const files = event.target.files;
+      if (!files) return;
+
+      Array.from(files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          tempDiaryPhotos.push(e.target.result);
+          renderPhotoGrid();
+        };
+        reader.readAsDataURL(file);
+      });
+      event.target.value = '';
+    }
+
+    function renderPhotoGrid() {
+      const grid = document.getElementById('diaryPhotoGrid');
+      grid.innerHTML = '';
+
+      if (tempDiaryPhotos.length === 0) {
+        grid.innerHTML = '<span id="noPhotoText" class="col-span-3 text-center text-xs text-stone-400 self-center py-4 font-bold">붙여둔 사진이 없습니다.</span>';
+        return;
+      }
+
+      tempDiaryPhotos.forEach((src, idx) => {
+        const wrap = document.createElement('div');
+        const rot = idx % 2 === 0 ? '-rotate-1' : 'rotate-1';
+        wrap.className = `relative group bg-white p-1 pb-3 rounded shadow-polaroid border border-stone-200 transform ${rot} hover:rotate-0 transition duration-150 cursor-pointer`;
+
+        const img = document.createElement('img');
+        img.src = src;
+        img.className = 'w-full aspect-square object-cover rounded-xs';
+        img.onclick = () => openLightbox(src);
+
+        const delBtn = document.createElement('button');
+        delBtn.innerHTML = '&times;';
+        delBtn.className = 'absolute -top-1 -right-1 w-5 h-5 bg-stone-900 text-white rounded-full flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition shadow';
+        delBtn.onclick = (e) => {
+          e.stopPropagation();
+          tempDiaryPhotos.splice(idx, 1);
+          renderPhotoGrid();
+        };
+
+        wrap.appendChild(img);
+        wrap.appendChild(delBtn);
+        grid.appendChild(wrap);
+      });
+    }
+
+    function saveDiary() {
+      const title = document.getElementById('diaryTitleInput').value.trim();
+      const content = document.getElementById('diaryContentInput').value.trim();
+
+      if (!title && !content && tempDiaryPhotos.length === 0) {
+        alert('내용이나 사진을 입력해주세요.');
+        return;
+      }
+
+      diaries[selectedDiaryDateStr] = {
+        date: selectedDiaryDateStr,
+        title: title || '(제목 없음)',
+        content: content,
+        photos: [...tempDiaryPhotos]
+      };
+
+      saveToStorage();
+      alert('소중한 하루가 다이어리에 기록되었습니다.');
+      renderDiaryTab();
+      renderDashboard();
+    }
+
+    function deleteDiary() {
+      if (!confirm('이 날의 다이어리를 삭제하시겠습니까?')) return;
+      delete diaries[selectedDiaryDateStr];
+      saveToStorage();
+      renderDiaryTab();
+      renderDashboard();
+    }
+
+    function changeDiaryMonth(delta) {
+      diaryCalDate.setMonth(diaryCalDate.getMonth() + delta);
+      renderDiaryTab();
+    }
+    function goDiaryToday() {
+      diaryCalDate = new Date();
+      selectedDiaryDateStr = formatDate(diaryCalDate);
+      renderDiaryTab();
+    }
+
+    function showDiaryDetailModal(dateStr) {
+      const diary = diaries[dateStr];
+      if (!diary) return;
+
+      document.getElementById('viewDiaryDate').textContent = diary.date;
+      document.getElementById('viewDiaryTitle').textContent = diary.title;
+      document.getElementById('viewDiaryContent').textContent = diary.content || '(기록된 내용이 없습니다)';
+
+      const photoWrap = document.getElementById('viewDiaryPhotos');
+      photoWrap.innerHTML = '';
+      if (diary.photos && diary.photos.length > 0) {
+        diary.photos.forEach(src => {
+          const wrap = document.createElement('div');
+          wrap.className = 'bg-white p-1 pb-2 rounded shadow-polaroid border border-stone-200 cursor-pointer';
+          const img = document.createElement('img');
+          img.src = src;
+          img.className = 'w-full h-20 object-cover rounded-xs';
+          img.onclick = () => openLightbox(src);
+          wrap.appendChild(img);
+          photoWrap.appendChild(wrap);
+        });
+      }
+
+      document.getElementById('diaryDetailModal').classList.remove('hidden');
+    }
+    function closeDiaryDetailModal() {
+      document.getElementById('diaryDetailModal').classList.add('hidden');
+    }
+    function editDiaryFromModal() {
+      closeDiaryDetailModal();
+      loadDiaryFormForDate(document.getElementById('viewDiaryDate').textContent);
+    }
+
+    function openLightbox(src) {
+      document.getElementById('lightboxImg').src = src;
+      document.getElementById('photoLightboxModal').classList.remove('hidden');
+    }
+    function closeLightbox() {
+      document.getElementById('photoLightboxModal').classList.add('hidden');
+    }
+
+    function openScheduleModal(presetCategory = null, editId = null) {
+      const modal = document.getElementById('scheduleModal');
+      const form = document.getElementById('scheduleForm');
+      form.reset();
+
+      document.getElementById('btnDeleteSched').classList.add('hidden');
+
+      if (editId) {
+        const sched = schedules.find(s => s.id === editId);
+        if (sched) {
+          document.getElementById('schedId').value = sched.id;
+          document.getElementById('schedTitle').value = sched.title;
+          document.querySelector(`input[name="schedCategory"][value="${sched.category}"]`).checked = true;
+          document.getElementById('schedIsImp').checked = !!sched.isImp;
+          document.getElementById('schedDate').value = sched.date;
+          document.getElementById('schedIsAllDay').checked = !!sched.isAllDay;
+          document.getElementById('schedStartTime').value = sched.startTime || '';
+          document.getElementById('schedEndTime').value = sched.endTime || '';
+          document.getElementById('schedMemo').value = sched.memo || '';
+          document.getElementById('btnDeleteSched').classList.remove('hidden');
+          document.getElementById('scheduleModalTitle').textContent = '일정 수정';
+        }
+      } else {
+        document.getElementById('schedId').value = '';
+        document.getElementById('schedDate').value = selectedDateStr;
+        document.getElementById('scheduleModalTitle').textContent = '새 일정 기록';
+        if (presetCategory) {
+          const catRadio = document.querySelector(`input[name="schedCategory"][value="${presetCategory}"]`);
+          if (catRadio) catRadio.checked = true;
+        }
+      }
+      toggleTimeInputs();
+      modal.classList.remove('hidden');
+    }
+
+    function openScheduleModalWithDate() {
+      openScheduleModal(null, null);
+    }
+
+    function closeScheduleModal() {
+      document.getElementById('scheduleModal').classList.add('hidden');
+    }
+
+    function toggleTimeInputs() {
+      const isAllDay = document.getElementById('schedIsAllDay').checked;
+      const timeGroup = document.getElementById('timeInputsGroup');
+      if (isAllDay) {
+        timeGroup.classList.add('hidden');
+        timeGroup.classList.remove('grid');
+      } else {
+        timeGroup.classList.remove('hidden');
+        timeGroup.classList.add('grid');
+      }
+    }
+
+    function handleScheduleSubmit(e) {
+      e.preventDefault();
+      const id = document.getElementById('schedId').value;
+      const title = document.getElementById('schedTitle').value.trim();
+      const category = document.querySelector('input[name="schedCategory"]:checked').value;
+      const isImp = document.getElementById('schedIsImp').checked;
+      const isAllDay = document.getElementById('schedIsAllDay').checked;
+      const date = document.getElementById('schedDate').value;
+      const startTime = document.getElementById('schedStartTime').value;
+      const endTime = document.getElementById('schedEndTime').value;
+      const memo = document.getElementById('schedMemo').value.trim();
+
+      if (id) {
+        const idx = schedules.findIndex(s => s.id === id);
+        if (idx !== -1) {
+          schedules[idx] = { ...schedules[idx], title, category, isImp, isAllDay, date, startTime, endTime, memo };
+        }
+      } else {
+        const newSched = {
+          id: Date.now().toString(),
+          title,
+          category,
+          isImp,
+          isAllDay,
+          date,
+          startTime,
+          endTime,
+          memo,
+          done: false
+        };
+        schedules.push(newSched);
+      }
+
+      saveToStorage();
+      closeScheduleModal();
+      renderDashboard();
+      renderWorkTab();
+      renderStudyTab();
+      renderDiaryTab();
+    }
+
+    function deleteCurrentSchedule() {
+      const id = document.getElementById('schedId').value;
+      if (!id || !confirm('이 일정을 삭제하시겠습니까?')) return;
+
+      schedules = schedules.filter(s => s.id !== id);
+      saveToStorage();
+      closeScheduleModal();
+      renderDashboard();
+      renderWorkTab();
+      renderStudyTab();
+      renderDiaryTab();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      renderDashboard();
+    });
+  </script>
+</body>
+</html>
